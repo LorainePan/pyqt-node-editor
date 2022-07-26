@@ -35,11 +35,12 @@ class CalculatorWindow(NodeEditorWindow):
         self.name_company = 'Blenderfreak'
         self.name_product = 'Calculator NodeEditor'
 
-        self.stylesheet_filename = os.path.join(os.path.dirname(__file__), "qss/nodeeditor.qss")
-        loadStylesheets(
-            os.path.join(os.path.dirname(__file__), "qss/nodeeditor-dark.qss"),
-            self.stylesheet_filename
-        )
+        # Stylesheets are loaded by FreeCAD
+        #self.stylesheet_filename = os.path.join(os.path.dirname(__file__), "qss/nodeeditor.qss")
+        #loadStylesheets(
+            #os.path.join(os.path.dirname(__file__), "qss/nodeeditor-dark.qss"),
+            #self.stylesheet_filename
+        #)
 
         self.empty_icon = QIcon(".")
 
