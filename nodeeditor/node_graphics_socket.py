@@ -7,20 +7,20 @@ from qtpy.QtGui import QColor, QBrush, QPen
 from qtpy.QtCore import Qt, QRectF
 
 SOCKET_COLORS = [
-    QColor("#FFFF7700"),
-    QColor("#FF52e220"),
-    QColor("#FF0056a6"),
-    QColor("#FFa86db1"),
-    QColor("#FFb54747"),
-    QColor("#FFdbe220"),
-    QColor("#FF888888"),
-    QColor("#FFFF7700"),
-    QColor("#FF52e220"),
-    QColor("#FF0056a6"),
-    QColor("#FFa86db1"),
-    QColor("#FFb54747"),
-    QColor("#FFdbe220"),
-    QColor("#FF888888"),
+    QColor("#FFFF7700"), # Orange
+    QColor("#FF52e220"), # Green
+    QColor("#FF0056a6"), # Blue
+    QColor("#FFa86db1"), # Purple
+    QColor("#FFb54747"), # Brown
+    QColor("#FFdbe220"), # Yellow
+    QColor("#FF888888"), # Gray
+    QColor("#FFFF7700"), # Orange 2
+    QColor("#FF52e220"), # Green 2
+    QColor("#FF0056a6"), # Blue 2
+    QColor("#FFa86db1"), # Purple 2
+    QColor("#FFb54747"), # Brown 2
+    QColor("#FFdbe220"), # Yellow 2
+    QColor("#FF888888"), # Gray 2
 ]
 
 class QDMGraphicsSocket(QGraphicsItem):
