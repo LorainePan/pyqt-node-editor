@@ -42,7 +42,6 @@ class CalcNode_Input(CalcNode):
     def __init__(self, scene):
         super().__init__(scene, inputs=[], outputs=[3])
         self.eval()
-        print(self.icon)
 
     def initInnerClasses(self):
         self.content = CalcInputContent(self)

@@ -1,3 +1,4 @@
+import os
 from qtpy.QtGui import QImage
 from qtpy.QtCore import QRectF
 from qtpy.QtWidgets import QLabel
@@ -8,6 +9,7 @@ from nodeeditor.node_graphics_node import QDMGraphicsNode
 from nodeeditor.node_socket import LEFT_CENTER, RIGHT_CENTER
 from nodeeditor.utils import dumpException
 
+import FreeCAD as App
 
 class CalcGraphicsNode(QDMGraphicsNode):
     def initSizes(self):
@@ -21,7 +23,9 @@ class CalcGraphicsNode(QDMGraphicsNode):
 
     def initAssets(self):
         super().initAssets()
-        self.icons = QImage("icons/status_icons.png")
+        status_icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
+                            "example_freecad", "icons", "status_icons.png")
+        self.icons = QImage(status_icon)
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         super().paint(painter, QStyleOptionGraphicsItem, widget)
