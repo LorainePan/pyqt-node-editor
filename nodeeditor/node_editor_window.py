@@ -250,12 +250,12 @@ class NodeEditorWindow(QMainWindow):
         if self.getCurrentNodeEditorWidget():
             data = self.getCurrentNodeEditorWidget().scene.clipboard.serializeSelected(delete=False)
             str_data = json.dumps(data, indent=4)
-            QApplication.instance().clipboard().setText(str_data)
+            QApplication.clipboard().setText(str_data)
 
     def onEditPaste(self):
         """Handle Edit Paste from clipboard operation"""
         if self.getCurrentNodeEditorWidget():
-            raw_data = QApplication.instance().clipboard().text()
+            raw_data = QApplication.clipboard().text()
 
             try:
                 data = json.loads(raw_data)

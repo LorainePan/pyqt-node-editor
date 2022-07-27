@@ -1,6 +1,10 @@
 import os
-from examples.example_freecad.calc_conf import register_node, OP_NODE_ADD, OP_NODE_SUB, OP_NODE_MUL, OP_NODE_DIV
-from examples.example_freecad.calc_node_base import CalcNode
+from examples.example_freecad.calc_conf import (
+    register_node, OP_NODE_ADD, OP_NODE_SUB, OP_NODE_MUL, OP_NODE_DIV,
+    OP_NODE_GET_OBJ
+)
+from examples.example_freecad.calc_conf import register_node, OP_NODE_ADD, OP_NODE_SUB, OP_NODE_MUL, OP_NODE_DIV, OP_NODE_GET_OBJ
+from examples.example_freecad.calc_node_base import CalcNode, FCOneOneNode
 import FreeCAD as App
 
 
@@ -53,6 +57,25 @@ class CalcNode_Div(CalcNode):
 
     def evalOperation(self, input1, input2):
         return input1 / input2
+
+
+@register_node(OP_NODE_GET_OBJ)
+class FCNode_GetObj(FCOneOneNode):
+    icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
+                        "example_freecad", "icons", "add.png")
+    op_code = OP_NODE_GET_OBJ
+    op_title = "Object"
+    content_label = "o"
+    content_label_objname = "calc_node_bg"
+
+    def __init__(self, scene):
+        super().__init__(scene, inputs=[0], outputs=[1])
+        #self.eval()
+
+    def evalOperation(self, input):
+        obj = App.ActiveDocument.getObjectsByLabel(input)
+        print(obj)
+        return obj
 
 # way how to register by function call
 # register_node_now(OP_NODE_ADD, CalcNode_Add)
