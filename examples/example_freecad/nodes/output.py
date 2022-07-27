@@ -16,7 +16,6 @@ class CalcOutputContent(QDMNodeContentWidget):
 
 @register_node(OP_NODE_OUTPUT)
 class CalcNode_Output(CalcNode):
-    #icon = "icons/out.png"
     icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
                         "example_freecad", "icons", "out.png")
     op_code = OP_NODE_OUTPUT

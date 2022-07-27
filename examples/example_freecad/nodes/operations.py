@@ -6,7 +6,6 @@ import FreeCAD as App
 
 @register_node(OP_NODE_ADD)
 class CalcNode_Add(CalcNode):
-    #icon = "icons/add.png"
     icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
                         "example_freecad", "icons", "add.png")
     op_code = OP_NODE_ADD
@@ -20,7 +19,6 @@ class CalcNode_Add(CalcNode):
 
 @register_node(OP_NODE_SUB)
 class CalcNode_Sub(CalcNode):
-    #icon = "icons/sub.png"
     icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
                         "example_freecad", "icons", "sub.png")
     op_code = OP_NODE_SUB
@@ -33,7 +31,6 @@ class CalcNode_Sub(CalcNode):
 
 @register_node(OP_NODE_MUL)
 class CalcNode_Mul(CalcNode):
-    #icon = "icons/mul.png"
     icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
                         "example_freecad", "icons", "mul.png")
     op_code = OP_NODE_MUL
@@ -47,7 +44,6 @@ class CalcNode_Mul(CalcNode):
 
 @register_node(OP_NODE_DIV)
 class CalcNode_Div(CalcNode):
-    #icon = "icons/divide.png"
     icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
                         "example_freecad", "icons", "divide.png")
     op_code = OP_NODE_DIV
