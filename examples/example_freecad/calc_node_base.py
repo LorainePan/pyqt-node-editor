@@ -102,7 +102,7 @@ class CalcNode(Node):
 
     def eval(self):
         if not self.isDirty() and not self.isInvalid():
-            print(" _> returning cached %s value:" % self.__class__.__name__, self.value)
+            #print(" _> returning cached %s value:" % self.__class__.__name__, self.value)
             return self.value
         try:
 
@@ -119,7 +119,7 @@ class CalcNode(Node):
 
 
     def onInputChanged(self, socket=None):
-        print("%s::__onInputChanged" % self.__class__.__name__)
+        #print("%s::__onInputChanged" % self.__class__.__name__)
         self.markDirty()
         self.eval()
 
@@ -148,8 +148,10 @@ class FCOneOneNode(Node):
 
     def __init__(self, scene, inputs=[0], outputs=[1]):
         super().__init__(scene, self.__class__.op_title, inputs, outputs)
-
         self.value = None
+
+        self.input_multi_edged = True
+        self.initSockets(inputs, outputs, True)
 
         # it's really important to mark all nodes Dirty by default
         self.markDirty()
@@ -164,16 +166,18 @@ class FCOneOneNode(Node):
         return 123
 
     def evalImplementation(self):
-        i = self.getInput(0)
+        input = self.getInputs(0)
 
-        if i is None:
+        if input is None:
             self.markInvalid()
             self.markDescendantsDirty()
             self.grNode.setToolTip("Connect all inputs")
             return None
 
         else:
-            val = self.evalOperation(i.eval())
+            val = []
+            for i in input:
+                val.append(self.evalOperation(i.eval()))
             self.value = val
             self.markDirty(False)
             self.markInvalid(False)
@@ -181,7 +185,7 @@ class FCOneOneNode(Node):
 
             self.markDescendantsDirty()
             self.evalChildren()
-
+            print(val)
             return val
 
     def eval(self):
@@ -203,7 +207,7 @@ class FCOneOneNode(Node):
 
 
     def onInputChanged(self, socket=None):
-        print("%s::__onInputChanged" % self.__class__.__name__)
+        #print("%s::__onInputChanged" % self.__class__.__name__)
         self.markDirty()
         self.eval()
 
@@ -215,5 +219,5 @@ class FCOneOneNode(Node):
 
     def deserialize(self, data, hashmap={}, restore_id=True):
         res = super().deserialize(data, hashmap, restore_id)
-        print("Deserialized CalcNode '%s'" % self.__class__.__name__, "res:", res)
+        #print("Deserialized CalcNode '%s'" % self.__class__.__name__, "res:", res)
         return res

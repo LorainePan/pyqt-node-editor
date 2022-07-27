@@ -74,7 +74,6 @@ class FCNode_GetObj(FCOneOneNode):
 
     def evalOperation(self, input):
         obj = App.ActiveDocument.getObjectsByLabel(input)
-        print(obj)
         return obj
 
 # way how to register by function call
