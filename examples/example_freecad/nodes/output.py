@@ -1,8 +1,10 @@
+import os
 from qtpy.QtWidgets import QLabel
 from qtpy.QtCore import Qt
-from examples.example_calculator.calc_conf import register_node, OP_NODE_OUTPUT
-from examples.example_calculator.calc_node_base import CalcNode, CalcGraphicsNode
+from examples.example_freecad.calc_conf import register_node, OP_NODE_OUTPUT
+from examples.example_freecad.calc_node_base import CalcNode, CalcGraphicsNode
 from nodeeditor.node_content_widget import QDMNodeContentWidget
+import FreeCAD as App
 
 
 class CalcOutputContent(QDMNodeContentWidget):
@@ -14,7 +16,9 @@ class CalcOutputContent(QDMNodeContentWidget):
 
 @register_node(OP_NODE_OUTPUT)
 class CalcNode_Output(CalcNode):
-    icon = "icons/out.png"
+    #icon = "icons/out.png"
+    icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
+                        "example_freecad", "icons", "out.png")
     op_code = OP_NODE_OUTPUT
     op_title = "Output"
     content_label_objname = "calc_node_output"

@@ -1,9 +1,11 @@
+import os
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtCore import Qt
-from examples.example_calculator.calc_conf import register_node, OP_NODE_INPUT
-from examples.example_calculator.calc_node_base import CalcNode, CalcGraphicsNode
+from examples.example_freecad.calc_conf import register_node, OP_NODE_INPUT
+from examples.example_freecad.calc_node_base import CalcNode, CalcGraphicsNode
 from nodeeditor.node_content_widget import QDMNodeContentWidget
 from nodeeditor.utils import dumpException
+import FreeCAD as App
 
 
 class CalcInputContent(QDMNodeContentWidget):
@@ -30,7 +32,9 @@ class CalcInputContent(QDMNodeContentWidget):
 
 @register_node(OP_NODE_INPUT)
 class CalcNode_Input(CalcNode):
-    icon = "icons/in.png"
+    #icon = "icons/in.png"
+    icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
+                        "example_freecad", "icons", "in.png")
     op_code = OP_NODE_INPUT
     op_title = "Input"
     content_label_objname = "calc_node_input"
@@ -38,6 +42,7 @@ class CalcNode_Input(CalcNode):
     def __init__(self, scene):
         super().__init__(scene, inputs=[], outputs=[3])
         self.eval()
+        print(self.icon)
 
     def initInnerClasses(self):
         self.content = CalcInputContent(self)

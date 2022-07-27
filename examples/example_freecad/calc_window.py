@@ -5,10 +5,10 @@ from qtpy.QtCore import Qt, QSignalMapper
 
 from nodeeditor.utils import loadStylesheets
 from nodeeditor.node_editor_window import NodeEditorWindow
-from examples.example_calculator.calc_sub_window import CalculatorSubWindow
-from examples.example_calculator.calc_drag_listbox import QDMDragListbox
+from examples.example_freecad.calc_sub_window import CalculatorSubWindow
+from examples.example_freecad.calc_drag_listbox import QDMDragListbox
 from nodeeditor.utils import dumpException, pp
-from examples.example_calculator.calc_conf import CALC_NODES
+from examples.example_freecad.calc_conf import CALC_NODES
 
 # Enabling edge validators
 from nodeeditor.node_edge import Edge
