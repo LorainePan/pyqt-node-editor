@@ -1,19 +1,13 @@
 import os
-from qtpy.QtWidgets import QLineEdit
-from qtpy.QtCore import Qt
-from examples.example_freecad.calc_conf import register_node, OP_NODE_INPUT, OP_NODE_TXT_INPUT
-from examples.example_freecad.calc_node_base import CalcNode, CalcGraphicsNode
-from nodeeditor.node_content_widget import QDMNodeContentWidget
-from nodeeditor.utils import dumpException
-
+from qtpy.QtCore import Qt, QRectF
 from qtpy.QtGui import QImage
-from qtpy.QtCore import QRectF
-from qtpy.QtWidgets import QLabel
-
+from qtpy.QtWidgets import QLineEdit, QLabel
 from nodeeditor.node_node import Node
-from nodeeditor.node_graphics_node import QDMGraphicsNode
 from nodeeditor.node_socket import LEFT_CENTER, RIGHT_CENTER
-
+from nodeeditor.node_graphics_node import QDMGraphicsNode
+from nodeeditor.node_content_widget import QDMNodeContentWidget
+from examples.example_freecad.calc_conf import register_node, OP_NODE_OBJ_INFO
+from nodeeditor.utils import dumpException
 import FreeCAD as App
 
 
@@ -49,7 +43,7 @@ class ObjInfoGraphicsNode(QDMGraphicsNode):
 
 class TextInputContent(QDMNodeContentWidget):
     def initUI(self):
-        self.edit = QLineEdit("Text", self)
+        self.edit = QLineEdit("Obj label", self)
         self.edit.setAlignment(Qt.AlignRight)
         self.edit.setObjectName(self.node.content_label_objname)
 
@@ -69,26 +63,26 @@ class TextInputContent(QDMNodeContentWidget):
         return res
 
 
-@register_node(OP_NODE_TXT_INPUT)
+@register_node(OP_NODE_OBJ_INFO)
 class ObjInfoNode(Node):
     icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
                         "example_freecad", "icons", "in.png")
-    op_code = OP_NODE_TXT_INPUT
-    op_title = "Text"
+    op_code = OP_NODE_OBJ_INFO
+    op_title = "Object Info"
     content_label_objname = "calc_node_input"
 
-    GraphicsNode_class = CalcGraphicsNode
-    NodeContent_class = CalcContent
+    GraphicsNode_class = ObjInfoGraphicsNode
+    NodeContent_class = TextInputContent
 
     def __init__(self, scene):
-        super().__init__(scene, scene, self.__class__.op_title, inputs=[], outputs=[0])
+        super().__init__(scene, self.__class__.op_title, inputs=[], outputs=[0])
         self.value = None
-        self.input_multi_edged = True
-        self.initSockets(inputs, outputs, True)
+        self.input_multi_edged = False
+        self.output_multi_edged = True
+        self.initSockets([], [0], True)
 
         # it's really important to mark all nodes Dirty by default
         self.markDirty()
-
         self.eval()
 
     def initInnerClasses(self):
@@ -101,32 +95,13 @@ class ObjInfoNode(Node):
         self.input_socket_position = LEFT_CENTER
         self.output_socket_position = RIGHT_CENTER
 
-    def evalImplementation(self):
-        u_value = self.content.edit.text()
-        s_value = str(u_value)
-        self.value = s_value
-        self.markDirty(False)
-        self.markInvalid(False)
-
-        self.markDescendantsInvalid(False)
-        self.markDescendantsDirty()
-
-        self.grNode.setToolTip("Text input")
-
-        self.evalChildren()
-
-        return self.value
-
-
-
-
     def eval(self):
         if not self.isDirty() and not self.isInvalid():
             print(" _> returning cached %s value:" % self.__class__.__name__, self.value)
             return self.value
-
         try:
             val = self.evalImplementation()
+            print(val)
             return val
         except ValueError as e:
             self.markInvalid()
@@ -136,6 +111,24 @@ class ObjInfoNode(Node):
             self.markInvalid()
             self.grNode.setToolTip(str(e))
             dumpException(e)
+
+    def evalImplementation(self):
+        text = str(self.content.edit.text())
+        self.value = self.evalOperation(text)
+        self.markDirty(False)
+        self.markInvalid(False)
+        self.markDescendantsInvalid(False)
+        self.markDescendantsDirty()
+        self.grNode.setToolTip("Enter object label")
+        self.evalChildren()
+        return self.value
+
+    def evalOperation(self, obj_label):
+        obj_list = App.ActiveDocument.getObjectsByLabel(obj_label)
+        if len(obj_list) == 1:
+            return obj_list[0].Name
+        else:
+            raise ValueError('Unknown object label')
 
     def onInputChanged(self, socket=None):
         #print("%s::__onInputChanged" % self.__class__.__name__)
@@ -151,36 +144,3 @@ class ObjInfoNode(Node):
         res = super().deserialize(data, hashmap, restore_id)
         #print("Deserialized CalcNode '%s'" % self.__class__.__name__, "res:", res)
         return res
-
-
-class FCOneOneNode(Node):
-
-    def evalOperation(self, input1, input2):
-        return 123
-
-    def evalImplementation(self):
-        input = self.getInputs(0)
-
-        if input is None:
-            self.markInvalid()
-            self.markDescendantsDirty()
-            self.grNode.setToolTip("Connect all inputs")
-            return None
-
-        else:
-            val = []
-            for i in input:
-                val.append(self.evalOperation(i.eval()))
-            self.value = val
-            self.markDirty(False)
-            self.markInvalid(False)
-            self.grNode.setToolTip("")
-
-            self.markDescendantsDirty()
-            self.evalChildren()
-            print(val)
-            return val
-
-
-
-
