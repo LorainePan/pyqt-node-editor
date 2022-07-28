@@ -1,17 +1,23 @@
 import os
+from qtpy.QtWidgets import QLineEdit
+from qtpy.QtCore import Qt
+from examples.example_freecad.calc_conf import register_node, OP_NODE_INPUT, OP_NODE_TXT_INPUT
+from examples.example_freecad.calc_node_base import CalcNode, CalcGraphicsNode
+from nodeeditor.node_content_widget import QDMNodeContentWidget
+from nodeeditor.utils import dumpException
+
 from qtpy.QtGui import QImage
 from qtpy.QtCore import QRectF
 from qtpy.QtWidgets import QLabel
 
 from nodeeditor.node_node import Node
-from nodeeditor.node_content_widget import QDMNodeContentWidget
 from nodeeditor.node_graphics_node import QDMGraphicsNode
 from nodeeditor.node_socket import LEFT_CENTER, RIGHT_CENTER
-from nodeeditor.utils import dumpException
 
 import FreeCAD as App
 
-class CalcGraphicsNode(QDMGraphicsNode):
+
+class ObjInfoGraphicsNode(QDMGraphicsNode):
     def initSizes(self):
         super().initSizes()
         self.width = 160
@@ -41,71 +47,85 @@ class CalcGraphicsNode(QDMGraphicsNode):
         )
 
 
-class CalcContent(QDMNodeContentWidget):
+class TextInputContent(QDMNodeContentWidget):
     def initUI(self):
-        lbl = QLabel(self.node.content_label, self)
-        lbl.setObjectName(self.node.content_label_objname)
+        self.edit = QLineEdit("Text", self)
+        self.edit.setAlignment(Qt.AlignRight)
+        self.edit.setObjectName(self.node.content_label_objname)
+
+    def serialize(self):
+        res = super().serialize()
+        res['text'] = self.edit.text()
+        return res
+
+    def deserialize(self, data, hashmap={}):
+        res = super().deserialize(data, hashmap)
+        try:
+            value = data['text']
+            self.edit.setText(value)
+            return True & res
+        except Exception as e:
+            dumpException(e)
+        return res
 
 
-class CalcNode(Node):
-    icon = ""
-    op_code = 0
-    op_title = "Undefined"
-    content_label = ""
-    content_label_objname = "calc_node_bg"
+@register_node(OP_NODE_TXT_INPUT)
+class ObjInfoNode(Node):
+    icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
+                        "example_freecad", "icons", "in.png")
+    op_code = OP_NODE_TXT_INPUT
+    op_title = "Text"
+    content_label_objname = "calc_node_input"
 
     GraphicsNode_class = CalcGraphicsNode
     NodeContent_class = CalcContent
 
-
-    def __init__(self, scene, inputs=[2,2], outputs=[1]):
-        super().__init__(scene, self.__class__.op_title, inputs, outputs)
-
+    def __init__(self, scene):
+        super().__init__(scene, scene, self.__class__.op_title, inputs=[], outputs=[0])
         self.value = None
+        self.input_multi_edged = True
+        self.initSockets(inputs, outputs, True)
 
         # it's really important to mark all nodes Dirty by default
         self.markDirty()
 
+        self.eval()
+
+    def initInnerClasses(self):
+        self.content = TextInputContent(self)
+        self.grNode = ObjInfoGraphicsNode(self)
+        self.content.edit.textChanged.connect(self.onInputChanged)
 
     def initSettings(self):
         super().initSettings()
         self.input_socket_position = LEFT_CENTER
         self.output_socket_position = RIGHT_CENTER
 
-
-    def evalOperation(self, input1, input2):
-        return 123
-
-
     def evalImplementation(self):
-        i1 = self.getInput(0)
-        i2 = self.getInput(1)
+        u_value = self.content.edit.text()
+        s_value = str(u_value)
+        self.value = s_value
+        self.markDirty(False)
+        self.markInvalid(False)
 
-        if i1 is None or i2 is None:
-            self.markInvalid()
-            self.markDescendantsDirty()
-            self.grNode.setToolTip("Connect all inputs")
-            return None
+        self.markDescendantsInvalid(False)
+        self.markDescendantsDirty()
 
-        else:
-            val = self.evalOperation(i1.eval(), i2.eval())
-            self.value = val
-            self.markDirty(False)
-            self.markInvalid(False)
-            self.grNode.setToolTip("")
+        self.grNode.setToolTip("Text input")
 
-            self.markDescendantsDirty()
-            self.evalChildren()
+        self.evalChildren()
 
-            return val
+        return self.value
+
+
 
 
     def eval(self):
         if not self.isDirty() and not self.isInvalid():
-            #print(" _> returning cached %s value:" % self.__class__.__name__, self.value)
+            print(" _> returning cached %s value:" % self.__class__.__name__, self.value)
             return self.value
-        try:
 
+        try:
             val = self.evalImplementation()
             return val
         except ValueError as e:
@@ -117,18 +137,15 @@ class CalcNode(Node):
             self.grNode.setToolTip(str(e))
             dumpException(e)
 
-
     def onInputChanged(self, socket=None):
         #print("%s::__onInputChanged" % self.__class__.__name__)
         self.markDirty()
         self.eval()
 
-
     def serialize(self):
         res = super().serialize()
         res['op_code'] = self.__class__.op_code
         return res
-
 
     def deserialize(self, data, hashmap={}, restore_id=True):
         res = super().deserialize(data, hashmap, restore_id)
@@ -137,30 +154,6 @@ class CalcNode(Node):
 
 
 class FCOneOneNode(Node):
-    icon = ""
-    op_code = 0
-    op_title = "Undefined"
-    content_label = ""
-    content_label_objname = "calc_node_bg"
-
-    GraphicsNode_class = CalcGraphicsNode
-    NodeContent_class = CalcContent
-
-    def __init__(self, scene, inputs=[0], outputs=[1]):
-        super().__init__(scene, self.__class__.op_title, inputs, outputs)
-        self.value = None
-
-        self.input_multi_edged = True
-        self.initSockets(inputs, outputs, True)
-
-        # it's really important to mark all nodes Dirty by default
-        self.markDirty()
-
-
-    def initSettings(self):
-        super().initSettings()
-        self.input_socket_position = LEFT_CENTER
-        self.output_socket_position = RIGHT_CENTER
 
     def evalOperation(self, input1, input2):
         return 123
@@ -188,36 +181,6 @@ class FCOneOneNode(Node):
             print(val)
             return val
 
-    def eval(self):
-        if not self.isDirty() and not self.isInvalid():
-            print(" _> returning cached %s value:" % self.__class__.__name__, self.value)
-            return self.value
-
-        try:
-            val = self.evalImplementation()
-            return val
-        except ValueError as e:
-            self.markInvalid()
-            self.grNode.setToolTip(str(e))
-            self.markDescendantsDirty()
-        except Exception as e:
-            self.markInvalid()
-            self.grNode.setToolTip(str(e))
-            dumpException(e)
 
 
-    def onInputChanged(self, socket=None):
-        #print("%s::__onInputChanged" % self.__class__.__name__)
-        self.markDirty()
-        self.eval()
 
-
-    def serialize(self):
-        res = super().serialize()
-        res['op_code'] = self.__class__.op_code
-        return res
-
-    def deserialize(self, data, hashmap={}, restore_id=True):
-        res = super().deserialize(data, hashmap, restore_id)
-        #print("Deserialized CalcNode '%s'" % self.__class__.__name__, "res:", res)
-        return res
