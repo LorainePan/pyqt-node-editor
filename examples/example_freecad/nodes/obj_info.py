@@ -75,11 +75,11 @@ class ObjInfoNode(Node):
     NodeContent_class = TextInputContent
 
     def __init__(self, scene):
-        super().__init__(scene, self.__class__.op_title, inputs=[], outputs=[0])
+        super().__init__(scene, self.__class__.op_title, inputs=[], outputs=[(0, "Out")])
         self.value = None
         self.input_multi_edged = False
         self.output_multi_edged = True
-        self.initSockets([], [0], True)
+        self.initSockets([], [(0, "")], True)
 
         # it's really important to mark all nodes Dirty by default
         self.markDirty()

@@ -25,7 +25,7 @@ class Socket(Serializable):
     """Class representing Socket."""
 
     def __init__(self, node: 'Node', index: int=0, position: int=LEFT_TOP, socket_type: int=1, multi_edges: bool=True,
-                 count_on_this_node_side: int=1, is_input: bool=False):
+                 count_on_this_node_side: int=1, is_input: bool=False, socket_label: str=""):
         """
         :param node: reference to the :class:`~nodeeditor.node_node.Node` containing this `Socket`
         :type node: :class:`~nodeeditor.node_node.Node`
@@ -39,6 +39,8 @@ class Socket(Serializable):
         :type count_on_this_node_side: ``int``
         :param is_input: Is this an input `Socket`?
         :type is_input: ``bool``
+        :param socket_label: The label of the socket that is displayed next to it
+        :type socket_label: ``str``
 
         :Instance Attributes:
 
@@ -63,6 +65,7 @@ class Socket(Serializable):
         self.is_multi_edges = multi_edges
         self.is_input = is_input
         self.is_output = not self.is_input
+        self.label = socket_label
 
 
         if DEBUG: print("Socket -- creating with", self.index, self.position, "for nodeeditor", self.node)

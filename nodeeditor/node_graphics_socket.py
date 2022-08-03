@@ -2,8 +2,10 @@
 """
 A module containing Graphics representation of a :class:`~nodeeditor.node_socket.Socket`
 """
+import math
+
 from qtpy.QtWidgets import QGraphicsItem
-from qtpy.QtGui import QColor, QBrush, QPen
+from qtpy.QtGui import QColor, QBrush, QPen, QFontMetrics
 from qtpy.QtCore import Qt, QRectF
 
 SOCKET_COLORS = [
@@ -64,18 +66,31 @@ class QDMGraphicsSocket(QGraphicsItem):
         self._color_background = self.getSocketColor(self.socket_type)
         self._color_outline = QColor("#FF000000")
         self._color_highlight = QColor("#FF37A6FF")
+        self._color_label = QColor("#FFFFFF")
 
         self._pen = QPen(self._color_outline)
         self._pen.setWidthF(self.outline_width)
         self._pen_highlight = QPen(self._color_highlight)
         self._pen_highlight.setWidthF(2.0)
+        self._pen_label = QPen(self._color_label)
         self._brush = QBrush(self._color_background)
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
-        """Painting a circle"""
+        """Painting a circle and the socket label"""
+        # Painting socket circle
         painter.setBrush(self._brush)
         painter.setPen(self._pen if not self.isHighlighted else self._pen_highlight)
         painter.drawEllipse(-self.radius, -self.radius, 2 * self.radius, 2 * self.radius)
+
+        # Painting socket label
+        painter.setPen(self._pen_label)
+        label_metrics = QFontMetrics(painter.font())
+        label_width = label_metrics.horizontalAdvance(self.socket.label)
+        label_height = label_metrics.height()
+        if self.socket.is_input:
+            painter.drawText(self.radius + 5, int(label_height/4), self.socket.label)
+        else:
+            painter.drawText(-self.radius - label_width - 5, int(label_height / 4), self.socket.label)
 
     def boundingRect(self) -> QRectF:
         """Defining Qt' bounding rectangle"""

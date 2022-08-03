@@ -160,8 +160,8 @@ class Node(Serializable):
         for item in inputs:
             socket = self.__class__.Socket_class(
                 node=self, index=counter, position=self.input_socket_position,
-                socket_type=item, multi_edges=self.input_multi_edged,
-                count_on_this_node_side=len(inputs), is_input=True
+                socket_type=item[0], multi_edges=self.input_multi_edged,
+                count_on_this_node_side=len(inputs), is_input=True, socket_label=item[1]
             )
             counter += 1
             self.inputs.append(socket)
@@ -170,8 +170,8 @@ class Node(Serializable):
         for item in outputs:
             socket = self.__class__.Socket_class(
                 node=self, index=counter, position=self.output_socket_position,
-                socket_type=item, multi_edges=self.output_multi_edged,
-                count_on_this_node_side=len(outputs), is_input=False
+                socket_type=item[0], multi_edges=self.output_multi_edged,
+                count_on_this_node_side=len(outputs), is_input=False, socket_label=item[1]
             )
             counter += 1
             self.outputs.append(socket)

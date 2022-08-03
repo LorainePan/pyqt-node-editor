@@ -69,7 +69,7 @@ class FCNode_GetObj(FCOneOneNode):
     content_label_objname = "calc_node_bg"
 
     def __init__(self, scene):
-        super().__init__(scene, inputs=[0], outputs=[1])
+        super().__init__(scene, inputs=[(0, "Name")], outputs=[(1, "Object")])
         #self.eval()
 
     def evalOperation(self, input):

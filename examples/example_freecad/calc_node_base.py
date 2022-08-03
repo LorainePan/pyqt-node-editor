@@ -58,7 +58,7 @@ class CalcNode(Node):
     NodeContent_class = CalcContent
 
 
-    def __init__(self, scene, inputs=[2,2], outputs=[1]):
+    def __init__(self, scene, inputs=[(2, "In 1"),(2, "In 2")], outputs=[(1, "Out")]):
         super().__init__(scene, self.__class__.op_title, inputs, outputs)
 
         self.value = None
@@ -146,7 +146,7 @@ class FCOneOneNode(Node):
     GraphicsNode_class = CalcGraphicsNode
     NodeContent_class = CalcContent
 
-    def __init__(self, scene, inputs=[0], outputs=[1]):
+    def __init__(self, scene, inputs=[(0, "In")], outputs=[(1, "Out")]):
         super().__init__(scene, self.__class__.op_title, inputs, outputs)
         self.value = None
 
