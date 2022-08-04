@@ -46,3 +46,12 @@ QDMNodeContentWidget QLineEdit#calc_node_input {
 QGraphicsView {
   selection-background-color: #fff;
 }
+QDMNodeContentWidget QTextEdit#numbers_input_node {
+  margin: 5px;
+  border: 0px;
+  font-size: 12px;
+  background-color: #666;
+}
+QDMNodeContentWidget QTextEdit#numbers_input_node:focus {
+  background-color: #494949;
+}

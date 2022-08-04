@@ -20,7 +20,7 @@ class CalcNode_Output(CalcNode):
     content_label_objname = "calc_node_output"
 
     def __init__(self, scene):
-        super().__init__(scene, inputs=[1], outputs=[])
+        super().__init__(scene, inputs=[(1,"")], outputs=[])
 
     def initInnerClasses(self):
         self.content = CalcOutputContent(self)
