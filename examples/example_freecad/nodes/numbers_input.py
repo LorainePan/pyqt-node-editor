@@ -112,18 +112,24 @@ class NumbersInputNode(Node):
             dumpException(e)
 
     def evalImplementation(self):
-        # Todo: Call evalOperation
-        return None
+        string_input = self.content.edit.toPlainText()
+        string_input_list = string_input.split(';')
+        string_input_list = [element.strip() for element in string_input_list]
+        number_input_list = [float(element) for element in string_input_list]
+        self.value = number_input_list
+        self.markDirty(False)
+        self.markInvalid(False)
+        self.markDescendantsInvalid(False)
+        self.markDescendantsDirty()
+        self.grNode.setToolTip("")
+        self.evalChildren()
+        return self.value
 
-    def evalOperation(self, x, y, z):
-        vector = App.Vector(x, y, z)
-        if vector:
-            return vector
-        else:
-            raise ValueError('Wrong input values')
+    def evalOperation(self):
+        pass
 
     def onInputChanged(self, socket=None):
-        print("%s::__onInputChanged" % self.__class__.__name__)
+        print("%s::__onInputChanged" % self.__class__.__name__, "self.value = ", self.value)
         self.markDirty()
         self.eval()
 
