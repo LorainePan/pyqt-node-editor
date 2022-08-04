@@ -1,21 +1,48 @@
 import os
+
 from qtpy.QtCore import Qt, QRectF
 from qtpy.QtGui import QImage
-from qtpy.QtWidgets import QLineEdit, QLabel
+from qtpy.QtWidgets import QLineEdit, QVBoxLayout
+import FreeCAD as App
+
 from nodeeditor.node_node import Node
 from nodeeditor.node_socket import LEFT_CENTER, RIGHT_CENTER
 from nodeeditor.node_graphics_node import QDMGraphicsNode
 from nodeeditor.node_content_widget import QDMNodeContentWidget
-from examples.example_freecad.calc_conf import register_node, OP_NODE_OBJ_INFO
+from examples.example_freecad.calc_conf import register_node, OP_NODE_OBJ_IN
 from nodeeditor.utils import dumpException
-import FreeCAD as App
 
 
-class ObjInfoGraphicsNode(QDMGraphicsNode):
+class ObjectInputContent(QDMNodeContentWidget):
+    def initUI(self):
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(0,0,0,0)
+        self.setLayout(self.layout)
+        self.edit = QLineEdit("Label", self)
+        self.edit.setObjectName(self.node.content_label_objname)
+        self.layout.addWidget(self.edit)
+
+    def serialize(self):
+        res = super().serialize()
+        res['label'] = self.edit.text()
+        return res
+
+    def deserialize(self, data, hashmap={}):
+        res = super().deserialize(data, hashmap)
+        try:
+            value = data['label']
+            self.edit.setText(value)
+            return True & res
+        except Exception as e:
+            dumpException(e)
+        return res
+
+
+class ObjectInputGraphicsNode(QDMGraphicsNode):
     def initSizes(self):
         super().initSizes()
         self.width = 160
-        self.height = 74
+        self.height = 75
         self.edge_roundness = 6
         self.edge_padding = 0
         self.title_horizontal_padding = 8
@@ -24,7 +51,7 @@ class ObjInfoGraphicsNode(QDMGraphicsNode):
     def initAssets(self):
         super().initAssets()
         status_icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
-                            "example_freecad", "icons", "status_icons.png")
+                                   "example_freecad", "icons", "status_icons.png")
         self.icons = QImage(status_icon)
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
@@ -41,59 +68,32 @@ class ObjInfoGraphicsNode(QDMGraphicsNode):
         )
 
 
-class TextInputContent(QDMNodeContentWidget):
-    def initUI(self):
-        self.edit = QLineEdit("Obj label", self)
-        self.edit.setAlignment(Qt.AlignRight)
-        self.edit.setObjectName(self.node.content_label_objname)
-
-    def serialize(self):
-        res = super().serialize()
-        res['text'] = self.edit.text()
-        return res
-
-    def deserialize(self, data, hashmap={}):
-        res = super().deserialize(data, hashmap)
-        try:
-            value = data['text']
-            self.edit.setText(value)
-            return True & res
-        except Exception as e:
-            dumpException(e)
-        return res
-
-
-@register_node(OP_NODE_OBJ_INFO)
-class ObjInfoNode(Node):
+@register_node(OP_NODE_OBJ_IN)
+class ObjectInputNode(Node):
     icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
-                        "example_freecad", "icons", "in.png")
-    op_code = OP_NODE_OBJ_INFO
-    op_title = "Object Info"
-    content_label_objname = "calc_node_input"
+                        "example_freecad", "icons", "freecad_default_icon.png")
+    op_code = OP_NODE_OBJ_IN
+    op_title = "Object"
+    content_label_objname = "obj_input_node"
 
-    GraphicsNode_class = ObjInfoGraphicsNode
-    NodeContent_class = TextInputContent
+    GraphicsNode_class = ObjectInputGraphicsNode
+    NodeContent_class = ObjectInputContent
 
     def __init__(self, scene):
-        super().__init__(scene, self.__class__.op_title, inputs=[], outputs=[(0, "Out")])
+        super().__init__(scene, self.__class__.op_title, inputs=[], outputs=[(3, "")])
         self.value = None
-        self.input_multi_edged = False
-        self.output_multi_edged = True
-        self.initSockets([], [(0, "")], True)
-
-        # it's really important to mark all nodes Dirty by default
         self.markDirty()
-        self.eval()
-
-    def initInnerClasses(self):
-        self.content = TextInputContent(self)
-        self.grNode = ObjInfoGraphicsNode(self)
-        self.content.edit.textChanged.connect(self.onInputChanged)
+        #self.eval()
 
     def initSettings(self):
         super().initSettings()
         self.input_socket_position = LEFT_CENTER
         self.output_socket_position = RIGHT_CENTER
+
+    def initInnerClasses(self):
+        self.content = ObjectInputContent(self)
+        self.grNode = ObjectInputGraphicsNode(self)
+        self.content.edit.textChanged.connect(self.onInputChanged)
 
     def eval(self):
         if not self.isDirty() and not self.isInvalid():
@@ -101,7 +101,6 @@ class ObjInfoNode(Node):
             return self.value
         try:
             val = self.evalImplementation()
-            print(val)
             return val
         except ValueError as e:
             self.markInvalid()
@@ -110,30 +109,34 @@ class ObjInfoNode(Node):
         except Exception as e:
             self.markInvalid()
             self.grNode.setToolTip(str(e))
-            dumpException(e)
+            #dumpException(e)
 
     def evalImplementation(self):
-        text = str(self.content.edit.text())
-        self.value = self.evalOperation(text)
+        obj_label = self.content.edit.text()
+        self.value = self.evalOperation(obj_label)
         self.markDirty(False)
         self.markInvalid(False)
         self.markDescendantsInvalid(False)
         self.markDescendantsDirty()
-        self.grNode.setToolTip("Enter object label")
+        self.grNode.setToolTip("")
         self.evalChildren()
+        print("%s::__eval()" % self.__class__.__name__, "self.value = ", self.value)
         return self.value
 
     def evalOperation(self, obj_label):
-        obj_list = App.ActiveDocument.getObjectsByLabel(obj_label)
-        if len(obj_list) == 1:
-            return obj_list[0].Name
+        if not(App.ActiveDocument is None) :
+            obj_list = App.ActiveDocument.getObjectsByLabel(obj_label)
+            if len(obj_list) == 1:
+                return obj_list[0]
+            else:
+                raise ValueError('Unknown object')
         else:
-            raise ValueError('Unknown object label')
+            raise Exception('No active document')
 
     def onInputChanged(self, socket=None):
-        #print("%s::__onInputChanged" % self.__class__.__name__)
         self.markDirty()
         self.eval()
+        print("%s::__onInputChanged" % self.__class__.__name__, "self.value = ", self.value)
 
     def serialize(self):
         res = super().serialize()
@@ -142,5 +145,5 @@ class ObjInfoNode(Node):
 
     def deserialize(self, data, hashmap={}, restore_id=True):
         res = super().deserialize(data, hashmap, restore_id)
-        #print("Deserialized CalcNode '%s'" % self.__class__.__name__, "res:", res)
+        #print("Deserialized Node '%s'" % self.__class__.__name__, "res:", res)
         return res

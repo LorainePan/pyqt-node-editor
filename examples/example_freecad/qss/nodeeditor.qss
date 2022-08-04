@@ -63,3 +63,12 @@ QDMNodeContentWidget QLineEdit#text_input_node {
   margin: 5px;
   font-size: 28px;
 }
+QDMNodeContentWidget QLineEdit#obj_input_node {
+  margin: 5px;
+  font-size: 28px;
+}
+QDMNodeContentWidget QLabel#vec_xyz_node {
+  background: transparent;
+  color: #373737;
+  font-size: 50px;
+}

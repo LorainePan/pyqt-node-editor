@@ -1,7 +1,9 @@
 import os
+
 from qtpy.QtGui import QImage
 from qtpy.QtCore import QRectF
 from qtpy.QtWidgets import QLabel
+import FreeCAD as App
 
 from nodeeditor.node_node import Node
 from nodeeditor.node_content_widget import QDMNodeContentWidget
@@ -9,7 +11,6 @@ from nodeeditor.node_graphics_node import QDMGraphicsNode
 from nodeeditor.node_socket import LEFT_CENTER, RIGHT_CENTER
 from nodeeditor.utils import dumpException
 
-import FreeCAD as App
 
 class CalcGraphicsNode(QDMGraphicsNode):
     def initSizes(self):
@@ -129,93 +130,6 @@ class CalcNode(Node):
         res['op_code'] = self.__class__.op_code
         return res
 
-
-    def deserialize(self, data, hashmap={}, restore_id=True):
-        res = super().deserialize(data, hashmap, restore_id)
-        #print("Deserialized CalcNode '%s'" % self.__class__.__name__, "res:", res)
-        return res
-
-
-class FCOneOneNode(Node):
-    icon = ""
-    op_code = 0
-    op_title = "Undefined"
-    content_label = ""
-    content_label_objname = "calc_node_bg"
-
-    GraphicsNode_class = CalcGraphicsNode
-    NodeContent_class = CalcContent
-
-    def __init__(self, scene, inputs=[(0, "In")], outputs=[(1, "Out")]):
-        super().__init__(scene, self.__class__.op_title, inputs, outputs)
-        self.value = None
-
-        self.input_multi_edged = True
-        self.initSockets(inputs, outputs, True)
-
-        # it's really important to mark all nodes Dirty by default
-        self.markDirty()
-
-
-    def initSettings(self):
-        super().initSettings()
-        self.input_socket_position = LEFT_CENTER
-        self.output_socket_position = RIGHT_CENTER
-
-    def evalOperation(self, input1, input2):
-        return 123
-
-    def evalImplementation(self):
-        input = self.getInputs(0)
-
-        if input is None:
-            self.markInvalid()
-            self.markDescendantsDirty()
-            self.grNode.setToolTip("Connect all inputs")
-            return None
-
-        else:
-            val = []
-            for i in input:
-                val.append(self.evalOperation(i.eval()))
-            self.value = val
-            self.markDirty(False)
-            self.markInvalid(False)
-            self.grNode.setToolTip("")
-
-            self.markDescendantsDirty()
-            self.evalChildren()
-            print(val)
-            return val
-
-    def eval(self):
-        if not self.isDirty() and not self.isInvalid():
-            print(" _> returning cached %s value:" % self.__class__.__name__, self.value)
-            return self.value
-
-        try:
-            val = self.evalImplementation()
-            return val
-        except ValueError as e:
-            self.markInvalid()
-            self.grNode.setToolTip(str(e))
-            self.markDescendantsDirty()
-        except Exception as e:
-            self.markInvalid()
-            self.grNode.setToolTip(str(e))
-            dumpException(e)
-
-
-    def onInputChanged(self, socket=None):
-        #print("%s::__onInputChanged" % self.__class__.__name__)
-        self.markDirty()
-        self.eval()
-
-
-    def serialize(self):
-        res = super().serialize()
-        res['op_code'] = self.__class__.op_code
-        return res
 
     def deserialize(self, data, hashmap={}, restore_id=True):
         res = super().deserialize(data, hashmap, restore_id)

@@ -10,9 +10,9 @@ from qtpy.QtCore import Qt, QRectF
 
 SOCKET_COLORS = [
     QColor("#FFFF7700"), # Orange: Number (int or float)
-    QColor("#FF52e220"), # Green: Vector
+    QColor("#FF52e220"), # Green: FreeCAD vector (FreeCAD.Base.Vector)
     QColor("#FF0056a6"), # Blue: Text (str)
-    QColor("#FFa86db1"), # Purple
+    QColor("#FFa86db1"), # Purple: FreeCAD tree object (Part::PartFeature)
     QColor("#FFb54747"), # Brown
     QColor("#FFdbe220"), # Yellow
     QColor("#FF888888"), # Gray

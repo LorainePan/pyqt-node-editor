@@ -1,13 +1,27 @@
 import os
+
 from qtpy.QtCore import Qt, QRectF
 from qtpy.QtGui import QImage
+from qtpy.QtWidgets import QLabel, QVBoxLayout
+import FreeCAD as App
+
 from nodeeditor.node_node import Node
 from nodeeditor.node_socket import LEFT_CENTER, RIGHT_CENTER
 from nodeeditor.node_graphics_node import QDMGraphicsNode
 from nodeeditor.node_content_widget import QDMNodeContentWidget
 from examples.example_freecad.calc_conf import register_node, OP_NODE_VEC_XYZ
 from nodeeditor.utils import dumpException
-import FreeCAD as App
+
+
+class VecXYZGraphicsContent(QDMNodeContentWidget):
+    def initUI(self):
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(self.layout)
+        self.lbl = QLabel(self.node.content_label, self)
+        self.lbl.setAlignment(Qt.AlignCenter)
+        self.lbl.setObjectName(self.node.content_label_objname)
+        self.layout.addWidget(self.lbl)
 
 
 class VecXYZGraphicsNode(QDMGraphicsNode):
@@ -46,9 +60,11 @@ class VecXYZNode(Node):
                         "example_freecad", "icons", "freecad_default_icon.png")
     op_code = OP_NODE_VEC_XYZ
     op_title = "Vector XYZ"
+    content_label_objname = "vec_xyz_node"
+    content_label = "Vec"
 
     GraphicsNode_class = VecXYZGraphicsNode
-    NodeContent_class = None
+    NodeContent_class = VecXYZGraphicsContent
 
     def __init__(self, scene):
         super().__init__(scene, self.__class__.op_title, inputs=[(0, "X"), (0, "Y"), (0, "Z")], outputs=[(1, "Vec")])
@@ -58,6 +74,10 @@ class VecXYZNode(Node):
         #self.initSockets([(0, "X"), (0, "Y"), (0, "Z")], [(1, "Vec")], True)
         self.markDirty()
         #self.eval()
+
+    def initInnerClasses(self):
+        self.content = VecXYZGraphicsContent(self)
+        self.grNode = VecXYZGraphicsNode(self)
 
     def initSettings(self):
         super().initSettings()

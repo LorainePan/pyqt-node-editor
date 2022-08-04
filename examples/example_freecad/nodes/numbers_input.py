@@ -129,9 +129,9 @@ class NumbersInputNode(Node):
         pass
 
     def onInputChanged(self, socket=None):
-        print("%s::__onInputChanged" % self.__class__.__name__, "self.value = ", self.value)
         self.markDirty()
         self.eval()
+        print("%s::__onInputChanged" % self.__class__.__name__, "self.value = ", self.value)
 
     def serialize(self):
         res = super().serialize()
