@@ -59,3 +59,7 @@ QDMNodeContentWidget QLineEdit#number_input_node {
   margin: 5px;
   font-size: 28px;
 }
+QDMNodeContentWidget QLineEdit#text_input_node {
+  margin: 5px;
+  font-size: 28px;
+}

@@ -1,20 +1,48 @@
 import os
+
 from qtpy.QtCore import Qt, QRectF
 from qtpy.QtGui import QImage
+from qtpy.QtWidgets import QLineEdit, QVBoxLayout
+import FreeCAD as App
+
 from nodeeditor.node_node import Node
 from nodeeditor.node_socket import LEFT_CENTER, RIGHT_CENTER
 from nodeeditor.node_graphics_node import QDMGraphicsNode
 from nodeeditor.node_content_widget import QDMNodeContentWidget
-from examples.example_freecad.calc_conf import register_node, OP_NODE_VEC_XYZ
+from examples.example_freecad.calc_conf import register_node, OP_NODE_TXT_IN
 from nodeeditor.utils import dumpException
-import FreeCAD as App
 
 
-class VecXYZGraphicsNode(QDMGraphicsNode):
+class TextInputContent(QDMNodeContentWidget):
+    def initUI(self):
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(0,0,0,0)
+        self.setLayout(self.layout)
+        self.edit = QLineEdit("Text", self)
+        self.edit.setObjectName(self.node.content_label_objname)
+        self.layout.addWidget(self.edit)
+
+    def serialize(self):
+        res = super().serialize()
+        res['text'] = self.edit.text()
+        return res
+
+    def deserialize(self, data, hashmap={}):
+        res = super().deserialize(data, hashmap)
+        try:
+            value = data['text']
+            self.edit.setText(value)
+            return True & res
+        except Exception as e:
+            dumpException(e)
+        return res
+
+
+class TextInputGraphicsNode(QDMGraphicsNode):
     def initSizes(self):
         super().initSizes()
         self.width = 160
-        self.height = 95
+        self.height = 75
         self.edge_roundness = 6
         self.edge_padding = 0
         self.title_horizontal_padding = 8
@@ -23,7 +51,7 @@ class VecXYZGraphicsNode(QDMGraphicsNode):
     def initAssets(self):
         super().initAssets()
         status_icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
-                            "example_freecad", "icons", "status_icons.png")
+                                   "example_freecad", "icons", "status_icons.png")
         self.icons = QImage(status_icon)
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
@@ -40,29 +68,32 @@ class VecXYZGraphicsNode(QDMGraphicsNode):
         )
 
 
-@register_node(OP_NODE_VEC_XYZ)
-class VecXYZNode(Node):
+@register_node(OP_NODE_TXT_IN)
+class TextInputNode(Node):
     icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
                         "example_freecad", "icons", "freecad_default_icon.png")
-    op_code = OP_NODE_VEC_XYZ
-    op_title = "Vector XYZ"
+    op_code = OP_NODE_TXT_IN
+    op_title = "Text"
+    content_label_objname = "text_input_node"
 
-    GraphicsNode_class = VecXYZGraphicsNode
-    NodeContent_class = None
+    GraphicsNode_class = TextInputGraphicsNode
+    NodeContent_class = TextInputContent
 
     def __init__(self, scene):
-        super().__init__(scene, self.__class__.op_title, inputs=[(0, "X"), (0, "Y"), (0, "Z")], outputs=[(1, "Vec")])
+        super().__init__(scene, self.__class__.op_title, inputs=[], outputs=[(2, "")])
         self.value = None
-        #self.input_multi_edged = True
-        #self.output_multi_edged = True
-        #self.initSockets([(0, "X"), (0, "Y"), (0, "Z")], [(1, "Vec")], True)
         self.markDirty()
-        #self.eval()
+        self.eval()
 
     def initSettings(self):
         super().initSettings()
         self.input_socket_position = LEFT_CENTER
         self.output_socket_position = RIGHT_CENTER
+
+    def initInnerClasses(self):
+        self.content = TextInputContent(self)
+        self.grNode = TextInputGraphicsNode(self)
+        self.content.edit.textChanged.connect(self.onInputChanged)
 
     def eval(self):
         if not self.isDirty() and not self.isInvalid():
@@ -81,59 +112,19 @@ class VecXYZNode(Node):
             dumpException(e)
 
     def evalImplementation(self):
-        # Todo: Multi edge implementation
-        # x = self.getInputs(0)
-        # y = self.getInputs(1)
-        # z = self.getInputs(2)
-        #
-        # if len(x)==0 or len(y)==0 or len(z)==0:
-        #     self.markInvalid()
-        #     self.markDescendantsDirty()
-        #     self.grNode.setToolTip("Connect all inputs")
-        #     return None
-        #
-        # else:
-        #     x_values = []
-        #     for x_value in x:
-        #         x_values.append(x_value.eval())
-        #
-        #     y_values = []
-        #     for y_value in y:
-        #         y_values.append(y_value.eval())
-        #
-        #     z_values = []
-        #     for z_value in z:
-        #         z_values.append(z_value.eval())
-        #
-        #     val = self.evalOperation(x_values[0], y_values[0], z_values[0])
+        string_input = self.content.edit.text()
+        self.value = str(string_input)
+        self.markDirty(False)
+        self.markInvalid(False)
+        self.markDescendantsInvalid(False)
+        self.markDescendantsDirty()
+        self.grNode.setToolTip("")
+        self.evalChildren()
+        print("%s::__eval()" % self.__class__.__name__, "self.value = ", self.value)
+        return self.value
 
-        # Single edge implementation
-        x = self.getInput(0)
-        y = self.getInput(1)
-        z = self.getInput(2)
-
-        if x is None or y is None or z is None:
-            self.markInvalid()
-            self.markDescendantsDirty()
-            self.grNode.setToolTip("Connect all inputs")
-            return None
-        else:
-            val = self.evalOperation(x.eval(), y.eval(), z.eval())
-            self.value = val
-            self.markDirty(False)
-            self.markInvalid(False)
-            self.grNode.setToolTip("")
-            self.markDescendantsDirty()
-            self.evalChildren()
-            print("%s::__eval()" % self.__class__.__name__, "self.value = ", self.value)
-            return val
-
-    def evalOperation(self, x, y, z):
-        vector = App.Vector(x, y, z)
-        if vector:
-            return vector
-        else:
-            raise ValueError('Wrong input values')
+    def evalOperation(self):
+        pass
 
     def onInputChanged(self, socket=None):
         self.markDirty()

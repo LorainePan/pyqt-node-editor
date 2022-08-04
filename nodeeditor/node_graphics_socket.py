@@ -9,9 +9,9 @@ from qtpy.QtGui import QColor, QBrush, QPen, QFontMetrics
 from qtpy.QtCore import Qt, QRectF
 
 SOCKET_COLORS = [
-    QColor("#FFFF7700"), # Orange
-    QColor("#FF52e220"), # Green
-    QColor("#FF0056a6"), # Blue
+    QColor("#FFFF7700"), # Orange: Number (int or float)
+    QColor("#FF52e220"), # Green: Vector
+    QColor("#FF0056a6"), # Blue: Text (str)
     QColor("#FFa86db1"), # Purple
     QColor("#FFb54747"), # Brown
     QColor("#FFdbe220"), # Yellow
