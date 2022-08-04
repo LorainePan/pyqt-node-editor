@@ -120,6 +120,7 @@ class NumberInputNode(Node):
         self.markDescendantsDirty()
         self.grNode.setToolTip("")
         self.evalChildren()
+        print("%s::__eval()" % self.__class__.__name__, "self.value = ", self.value)
         return self.value
 
     def evalOperation(self):

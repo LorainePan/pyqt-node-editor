@@ -1,7 +1,7 @@
 import os
 from qtpy.QtCore import Qt, QRectF
 from qtpy.QtGui import QImage
-from qtpy.QtWidgets import QLineEdit, QLabel
+#from qtpy.QtWidgets import QLineEdit, QLabel
 from nodeeditor.node_node import Node
 from nodeeditor.node_socket import LEFT_CENTER, RIGHT_CENTER
 from nodeeditor.node_graphics_node import QDMGraphicsNode
@@ -54,9 +54,9 @@ class VecXYZNode(Node):
     def __init__(self, scene):
         super().__init__(scene, self.__class__.op_title, inputs=[(0, "X"), (0, "Y"), (0, "Z")], outputs=[(1, "Vec")])
         self.value = None
-        self.input_multi_edged = True
-        self.output_multi_edged = True
-        self.initSockets([(0, "X"), (0, "Y"), (0, "Z")], [(1, "Vec")], True)
+        #self.input_multi_edged = True
+        #self.output_multi_edged = True
+        #self.initSockets([(0, "X"), (0, "Y"), (0, "Z")], [(1, "Vec")], True)
         self.markDirty()
         #self.eval()
 
@@ -82,37 +82,52 @@ class VecXYZNode(Node):
             dumpException(e)
 
     def evalImplementation(self):
-        x = self.getInputs(0)
-        y = self.getInputs(1)
-        z = self.getInputs(2)
+        # Todo: Multi edge implementation
+        # x = self.getInputs(0)
+        # y = self.getInputs(1)
+        # z = self.getInputs(2)
+        #
+        # if len(x)==0 or len(y)==0 or len(z)==0:
+        #     self.markInvalid()
+        #     self.markDescendantsDirty()
+        #     self.grNode.setToolTip("Connect all inputs")
+        #     return None
+        #
+        # else:
+        #     x_values = []
+        #     for x_value in x:
+        #         x_values.append(x_value.eval())
+        #
+        #     y_values = []
+        #     for y_value in y:
+        #         y_values.append(y_value.eval())
+        #
+        #     z_values = []
+        #     for z_value in z:
+        #         z_values.append(z_value.eval())
+        #
+        #     val = self.evalOperation(x_values[0], y_values[0], z_values[0])
 
-        if len(x)==0 or len(y)==0 or len(z)==0:
+        # Single edge implementation
+        x = self.getInput(0)
+        y = self.getInput(1)
+        z = self.getInput(2)
+
+        if x is None or y is None or z is None:
             self.markInvalid()
             self.markDescendantsDirty()
             self.grNode.setToolTip("Connect all inputs")
             return None
-
         else:
-            x_values = []
-            for x_value in x:
-                x_values.append(x_value.eval())
-
-            y_values = []
-            for y_value in y:
-                y_values.append(y_value.eval())
-
-            z_values = []
-            for z_value in z:
-                z_values.append(z_value.eval())
-
-            val = self.evalOperation(x_values[0], y_values[0], z_values[0])
+            val = self.evalOperation(x.eval(), y.eval(), z.eval())
             self.value = val
             self.markDirty(False)
             self.markInvalid(False)
             self.grNode.setToolTip("")
             self.markDescendantsDirty()
             self.evalChildren()
-            return self.value
+            print("%s::__eval()" % self.__class__.__name__, "self.value = ", self.value)
+            return val
 
     def evalOperation(self, x, y, z):
         vector = App.Vector(x, y, z)
@@ -122,9 +137,9 @@ class VecXYZNode(Node):
             raise ValueError('Wrong input values')
 
     def onInputChanged(self, socket=None):
-        print("%s::__onInputChanged" % self.__class__.__name__)
         self.markDirty()
         self.eval()
+        print("%s::__onInputChanged" % self.__class__.__name__, "self.value = ", self.value)
 
     def serialize(self):
         res = super().serialize()
