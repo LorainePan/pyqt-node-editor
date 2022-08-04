@@ -55,3 +55,7 @@ QDMNodeContentWidget QTextEdit#numbers_input_node {
 QDMNodeContentWidget QTextEdit#numbers_input_node:focus {
   background-color: #494949;
 }
+QDMNodeContentWidget QLineEdit#number_input_node {
+  margin: 5px;
+  font-size: 28px;
+}
