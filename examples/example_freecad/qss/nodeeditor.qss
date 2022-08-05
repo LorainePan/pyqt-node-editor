@@ -72,3 +72,7 @@ QDMNodeContentWidget QLabel#vec_xyz_node {
   color: #373737;
   font-size: 50px;
 }
+QDMNodeContentWidget QLabel#number_slider_node {
+  background: transparent;
+  font-size: 12px;
+}

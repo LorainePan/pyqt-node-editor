@@ -59,7 +59,7 @@ class CalcNode(Node):
     NodeContent_class = CalcContent
 
 
-    def __init__(self, scene, inputs=[(2, "In 1"),(2, "In 2")], outputs=[(1, "Out")]):
+    def __init__(self, scene, inputs=[(0, "In 1"),(0, "In 2")], outputs=[(0, "Out")]):
         super().__init__(scene, self.__class__.op_title, inputs, outputs)
 
         self.value = None
