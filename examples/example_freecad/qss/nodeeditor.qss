@@ -76,3 +76,8 @@ QDMNodeContentWidget QLabel#number_slider_node {
   background: transparent;
   font-size: 12px;
 }
+QDMNodeContentWidget QLabel#set_obj_shape_node {
+  background: transparent;
+  color: #373737;
+  font-size: 50px;
+}
