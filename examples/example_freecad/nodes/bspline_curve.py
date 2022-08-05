@@ -10,11 +10,11 @@ from nodeeditor.node_node import Node
 from nodeeditor.node_socket import LEFT_CENTER, RIGHT_CENTER
 from nodeeditor.node_graphics_node import QDMGraphicsNode
 from nodeeditor.node_content_widget import QDMNodeContentWidget
-from examples.example_freecad.calc_conf import register_node, OP_NODE_SET_SHP
+from examples.example_freecad.calc_conf import register_node, OP_NODE_BSPLINE_CRV
 from nodeeditor.utils import dumpException
 
 
-class SetObjShapeGraphicsContent(QDMNodeContentWidget):
+class BSplineCurveGraphicsContent(QDMNodeContentWidget):
     def initUI(self):
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -25,7 +25,7 @@ class SetObjShapeGraphicsContent(QDMNodeContentWidget):
         self.layout.addWidget(self.lbl)
 
 
-class SetObjShapeGraphicsNode(QDMGraphicsNode):
+class BSplineCurveGraphicsNode(QDMGraphicsNode):
     def initSizes(self):
         super().initSizes()
         self.width = 160
@@ -55,30 +55,30 @@ class SetObjShapeGraphicsNode(QDMGraphicsNode):
         )
 
 
-@register_node(OP_NODE_SET_SHP)
-class SetObjShapeNode(Node):
+@register_node(OP_NODE_BSPLINE_CRV)
+class BSplineCurveNode(Node):
     icon = os.path.join(App.getUserAppDataDir(), "Macro", "pyqt-node-editor", "examples",
                         "example_freecad", "icons", "freecad_default_icon.png")
-    op_code = OP_NODE_SET_SHP
-    op_title = "Set Obj Shape"
-    content_label_objname = "set_obj_shape_node"
-    content_label = "Shp"
+    op_code = OP_NODE_BSPLINE_CRV
+    op_title = "BSpline Curve"
+    content_label_objname = "bspline_crv_node"
+    content_label = "Crv"
 
-    GraphicsNode_class = SetObjShapeGraphicsNode
-    NodeContent_class = SetObjShapeGraphicsContent
+    GraphicsNode_class = BSplineCurveGraphicsNode
+    NodeContent_class = BSplineCurveGraphicsContent
 
     def __init__(self, scene):
-        super().__init__(scene, self.__class__.op_title, inputs=[(3, "Obj"), (4, "Shp")], outputs=[(3, "Obj")])
+        super().__init__(scene, self.__class__.op_title, inputs=[(1, "Vec")], outputs=[(4, "Shp")])
         self.value = None
-        self.input_multi_edged = False
+        self.input_multi_edged = True
         self.output_multi_edged = True
-        self.initSockets([(3, "Obj"), (4, "Shp")], [(3, "Obj")], True)
+        self.initSockets([(1, "Vec")], [(4, "Shp")], True)
         self.markDirty()
         #self.eval()
 
     def initInnerClasses(self):
-        self.content = SetObjShapeGraphicsContent(self)
-        self.grNode = SetObjShapeGraphicsNode(self)
+        self.content = BSplineCurveGraphicsContent(self)
+        self.grNode = BSplineCurveGraphicsNode(self)
 
     def initSettings(self):
         super().initSettings()
@@ -102,43 +102,20 @@ class SetObjShapeNode(Node):
             dumpException(e)
 
     def evalImplementation(self):
-        # Todo: Multi edge implementation
-        # x = self.getInputs(0)
-        # y = self.getInputs(1)
-        # z = self.getInputs(2)
-        #
-        # if len(x)==0 or len(y)==0 or len(z)==0:
-        #     self.markInvalid()
-        #     self.markDescendantsDirty()
-        #     self.grNode.setToolTip("Connect all inputs")
-        #     return None
-        #
-        # else:
-        #     x_values = []
-        #     for x_value in x:
-        #         x_values.append(x_value.eval())
-        #
-        #     y_values = []
-        #     for y_value in y:
-        #         y_values.append(y_value.eval())
-        #
-        #     z_values = []
-        #     for z_value in z:
-        #         z_values.append(z_value.eval())
-        #
-        #     val = self.evalOperation(x_values[0], y_values[0], z_values[0])
+        inp_list = self.getInputs(0)
 
-        # Single edge implementation
-        obj = self.getInput(0)
-        shp = self.getInput(1)
-
-        if obj is None: #or shp is None:
+        if len(inp_list)==0:
             self.markInvalid()
             self.markDescendantsDirty()
             self.grNode.setToolTip("Connect all inputs")
             return None
+
         else:
-            val = self.evalOperation(obj.eval(), shp.eval())
+            vec_list = []
+            for elem in inp_list:
+                vec_list.append(elem.eval())
+
+            val = self.evalOperation(vec_list)
             self.value = val
             self.markDirty(False)
             self.markInvalid(False)
@@ -148,13 +125,12 @@ class SetObjShapeNode(Node):
             print("%s::__eval()" % self.__class__.__name__, "self.value = ", self.value)
             return val
 
-    def evalOperation(self, obj, shp):
-        if not (App.ActiveDocument is None) and not (obj is None):
-            obj.Shape = shp
-            App.ActiveDocument.recompute(None, True, True)
-            return obj
+    def evalOperation(self, vec_list):
+        if len(vec_list) > 1:
+            shp = Part.BSplineCurve(vec_list).toShape()
+            return shp
         else:
-            raise ValueError('Unknown object')
+            raise ValueError('Missing vectors')
 
     def onInputChanged(self, socket=None):
         self.markDirty()

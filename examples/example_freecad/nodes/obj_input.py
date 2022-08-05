@@ -124,7 +124,7 @@ class ObjectInputNode(Node):
         return self.value
 
     def evalOperation(self, obj_label):
-        if not(App.ActiveDocument is None) :
+        if not(App.ActiveDocument is None):
             obj_list = App.ActiveDocument.getObjectsByLabel(obj_label)
             if len(obj_list) == 1:
                 return obj_list[0]

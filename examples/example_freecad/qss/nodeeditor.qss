@@ -81,3 +81,8 @@ QDMNodeContentWidget QLabel#set_obj_shape_node {
   color: #373737;
   font-size: 50px;
 }
+QDMNodeContentWidget QLabel#bspline_crv_node {
+  background: transparent;
+  color: #373737;
+  font-size: 50px;
+}
